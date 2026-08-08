@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-surface-0: #0b0b0d;
+  --color-surface-1: #141417;
+  --color-surface-2: #1c1c21;
+  --color-surface-3: #26262d;
+  --color-line: #2e2e36;
+
+  --color-text-hi: #f2f2f4;
+  --color-text-mid: #9e9ea8;
+  --color-text-low: #63636e;
+
+  --color-craft: #ff9e2c;
+  --color-craft-soft: #ffc46b;
+  --color-assist: #7c5cff;
+  --color-danger: #ff5c5c;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  --radius-panel: 14px;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-surface-0);
+    color: var(--color-text-hi);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Every user-adjustable number is monospaced so it stops shifting
+     horizontally while a slider is being dragged. */
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-craft);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-craft) 35%, transparent);
+  }
+}
+
+@layer utilities {
+  /* The transparency checkerboard behind the canvas. Two offset gradients
+     rather than an image keeps it crisp at any device pixel ratio. */
+  .checkerboard {
+    background-color: #171719;
+    background-image:
+      linear-gradient(45deg, #202024 25%, transparent 25%, transparent 75%, #202024 75%),
+      linear-gradient(45deg, #202024 25%, transparent 25%, transparent 75%, #202024 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+  }
+
+  .rail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-surface-3) transparent;
+  }
+
+  .rail-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .rail-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+    border-radius: 99px;
+  }
+
+  .rail-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

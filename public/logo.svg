@@ -1,0 +1,27 @@
+<svg width="196" height="44" viewBox="0 0 196 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kanvara">
+  <defs>
+    <linearGradient id="lv-warm" x1="44" y1="0" x2="7" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC46B"/>
+      <stop offset="0.42" stop-color="#FF9E2C"/>
+      <stop offset="1" stop-color="#7C5CFF"/>
+    </linearGradient>
+    <linearGradient id="lv-raw" x1="0" y1="0" x2="31" y2="37" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3A3A42"/>
+      <stop offset="1" stop-color="#232329"/>
+    </linearGradient>
+    <linearGradient id="lv-seam" x1="0" y1="44" x2="44" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.15"/>
+    </linearGradient>
+    <clipPath id="lv-frame"><rect width="44" height="44" rx="11.5"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#lv-frame)">
+    <path d="M0 44 C12.8 40.3 11 23.8 22 22 C33 20.2 31.2 3.7 44 0 L0 0 Z" fill="url(#lv-raw)"/>
+    <path d="M0 44 C12.8 40.3 11 23.8 22 22 C33 20.2 31.2 3.7 44 0 L44 44 Z" fill="url(#lv-warm)"/>
+    <path d="M0 44 C12.8 40.3 11 23.8 22 22 C33 20.2 31.2 3.7 44 0" stroke="url(#lv-seam)" stroke-width="1.95" stroke-linecap="round"/>
+  </g>
+
+  <text x="60" y="30.5" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="25" font-weight="600" letter-spacing="-0.9" fill="currentColor">Kanvara</text>
+</svg>
