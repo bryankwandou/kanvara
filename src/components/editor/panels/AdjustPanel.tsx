@@ -1,5 +1,6 @@
 'use client';
 
+import { Histogram } from '@/components/editor/Histogram';
 import { Slider } from '@/components/ui/Slider';
 import { invalidate } from '@/engine/compositor';
 import { beginGesture, updateLayer, useSelected } from '@/engine/store';
@@ -49,6 +50,8 @@ export function AdjustPanel() {
           </Button>
         }
       />
+
+      <Histogram />
 
       {changed > 0 && (
         <div className="border-b border-line/60 px-4 py-2 text-[11px] text-text-low">

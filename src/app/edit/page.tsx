@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SessionBanner } from '@/components/editor/SessionBanner';
+import { Shortcuts } from '@/components/editor/Shortcuts';
 import { Stage } from '@/components/editor/Stage';
 import { TOOL_SHORTCUTS, ToolRail } from '@/components/editor/ToolRail';
 import { TopBar } from '@/components/editor/TopBar';
@@ -22,7 +24,9 @@ import {
   readState,
   redo,
   removeLayer,
+  setCompare,
   setTool,
+  setZoom,
   undo,
   useDoc,
   useEditor,
@@ -48,6 +52,7 @@ export default function EditPage() {
   const doc = useDoc();
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [help, setHelp] = useState(false);
 
   const Panel = PANELS[tool] ?? AdjustPanel;
 
@@ -116,6 +121,28 @@ export default function EditPage() {
 
       if (typing || mod) return;
 
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setHelp((h) => !h);
+        return;
+      }
+      if (e.key === 'Escape') {
+        setHelp(false);
+        return;
+      }
+      // Held, not toggled: the comparison is only useful while your eye is
+      // still on the same part of the frame.
+      if (e.key === '\\' && !e.repeat) {
+        e.preventDefault();
+        setCompare(true);
+        return;
+      }
+      if (e.key === '0') {
+        e.preventDefault();
+        setZoom(1);
+        return;
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const id = readState().doc.selectedId;
         if (id) {
@@ -131,8 +158,21 @@ export default function EditPage() {
         setTool(t);
       }
     };
+    // Releasing outside the window would otherwise leave compare stuck on, so
+    // blur clears it too.
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key === '\\') setCompare(false);
+    };
+    const onBlur = () => setCompare(false);
+
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', onBlur);
+    };
   }, []);
 
   const empty = doc.layers.length === 0;
@@ -162,6 +202,7 @@ export default function EditPage() {
 
         <main className="relative flex min-w-0 flex-1">
           <Stage />
+          <SessionBanner />
 
           {empty && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -190,8 +231,21 @@ export default function EditPage() {
           {dragOver && (
             <div className="pointer-events-none absolute inset-3 z-20 rounded-panel border-2 border-dashed border-craft/70 bg-craft/[0.06]" />
           )}
+
+          {!empty && (
+            <button
+              type="button"
+              onClick={() => setHelp(true)}
+              title="Keyboard shortcuts  ·  ?"
+              className="absolute bottom-3 right-3 z-20 flex size-7 items-center justify-center rounded-full border border-line bg-surface-1/90 text-[12px] text-text-low backdrop-blur transition-colors hover:text-text-hi"
+            >
+              ?
+            </button>
+          )}
         </main>
       </div>
+
+      {help && <Shortcuts onClose={() => setHelp(false)} />}
 
       <input
         ref={fileRef}

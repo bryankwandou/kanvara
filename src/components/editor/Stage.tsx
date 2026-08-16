@@ -13,7 +13,7 @@ import {
   updateLayer,
   useEditor,
 } from '@/engine/store';
-import type { Layer } from '@/engine/types';
+import { NEUTRAL, type Layer } from '@/engine/types';
 
 type Handle = 'nw' | 'ne' | 'se' | 'sw' | 'rot' | null;
 
@@ -36,6 +36,7 @@ export function Stage() {
   const brush = useEditor((s) => s.brush);
   const crop = useEditor((s) => s.crop);
   const playhead = useEditor((s) => s.playhead);
+  const compare = useEditor((s) => s.compare);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLCanvasElement>(null);
@@ -94,7 +95,19 @@ export function Stage() {
     if (!bufferRef.current) bufferRef.current = document.createElement('canvas');
     const buffer = bufferRef.current;
 
-    const frameDoc = playhead === null ? doc : docAtTime(doc, playhead);
+    let frameDoc = playhead === null ? doc : docAtTime(doc, playhead);
+
+    // Hold-to-compare strips the grade off image layers only; text, shapes and
+    // paint stay put so the comparison isolates the colour work.
+    if (compare) {
+      frameDoc = {
+        ...frameDoc,
+        layers: frameDoc.layers.map((l) =>
+          l.kind === 'image' ? { ...l, adjustments: { ...NEUTRAL } } : l,
+        ),
+      };
+    }
+
     composite(buffer, frameDoc);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -108,7 +121,7 @@ export function Stage() {
     ctx.clearRect(0, 0, viewW, viewH);
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(buffer, 0, 0, viewW, viewH);
-  }, [doc, viewW, viewH, box.w, playhead]);
+  }, [doc, viewW, viewH, box.w, playhead, compare]);
 
   const selected = doc.layers.find((l) => l.id === doc.selectedId) ?? null;
 
@@ -410,6 +423,12 @@ export function Stage() {
           )}
         </div>
       </div>
+
+      {compare && (
+        <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full border border-craft/60 bg-surface-1/95 px-3.5 py-1.5 text-[11px] font-medium text-craft backdrop-blur">
+          Showing the original
+        </div>
+      )}
 
       <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-3 rounded-lg border border-line bg-surface-1/90 px-3 py-1.5 text-[11px] text-text-mid backdrop-blur">
         <span className="tabular">{doc.width} × {doc.height}</span>

@@ -67,6 +67,8 @@ type State = {
   crop: CropRect;
   /** Non-null while the motion timeline is being previewed. */
   playhead: number | null;
+  /** True while the compare key is held, showing the untouched original. */
+  compare: boolean;
 };
 
 const EMPTY_DOC: CanvasDoc = {
@@ -87,6 +89,7 @@ let state: State = {
   brush: { mode: 'paint', size: 48, hardness: 70, opacity: 1, color: '#ff9e2c' },
   crop: null,
   playhead: null,
+  compare: false,
 };
 
 const listeners = new Set<() => void>();
@@ -147,6 +150,7 @@ export const setTool = (tool: ToolId) => set({ tool, crop: tool === 'crop' ? sta
 export const setBrush = (patch: Partial<BrushSettings>) => set({ brush: { ...state.brush, ...patch } });
 export const setCrop = (crop: CropRect) => set({ crop });
 export const setPlayhead = (playhead: number | null) => set({ playhead });
+export const setCompare = (compare: boolean) => set({ compare });
 export const setZoom = (zoom: number) => set({ zoom: Math.min(8, Math.max(0.05, zoom)) });
 export const setBusy = (busy: string | null) => set({ busy });
 
@@ -302,6 +306,22 @@ export function newDocument(width: number, height: number, background: string | 
 
 export function resizeDocument(width: number, height: number) {
   edit((d) => ({ ...d, width, height }));
+}
+
+/**
+ * Replaces the whole working document — used by session restore and by opening
+ * a saved project file. History is cleared because the incoming layers have no
+ * relationship to whatever was on the canvas a moment ago.
+ */
+export function loadDocument(doc: CanvasDoc, incoming: Record<string, HTMLCanvasElement>) {
+  for (const l of state.doc.layers) dropBitmap(l.id);
+  for (const [id, canvas] of Object.entries(incoming)) putBitmap(id, canvas);
+  set({ doc, past: [], future: [], crop: null, playhead: null, compare: false });
+}
+
+/** Snapshot of every layer bitmap, for the session writer and project export. */
+export function readBitmaps() {
+  return (id: string) => bitmaps.get(id);
 }
 
 function subscribe(fn: () => void) {

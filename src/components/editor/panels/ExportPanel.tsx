@@ -1,7 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Slider } from '@/components/ui/Slider';
+import { invalidate } from '@/engine/compositor';
+import { exportProject, importProject } from '@/engine/persist';
 import {
   download,
   estimateBytes,
@@ -11,7 +13,7 @@ import {
   SIZE_PRESETS,
   type ExportFormat,
 } from '@/engine/export';
-import { useDoc } from '@/engine/store';
+import { loadDocument, readBitmaps, readState, useDoc } from '@/engine/store';
 import { Button, Field, inputClass, PanelHeader, Section } from './Shell';
 
 export function ExportPanel() {
@@ -24,6 +26,8 @@ export function ExportPanel() {
   const [matte, setMatte] = useState('#ffffff');
   const [saving, setSaving] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [projectNote, setProjectNote] = useState<string | null>(null);
+  const projectRef = useRef<HTMLInputElement>(null);
 
   const meta = FORMATS.find((f) => f.id === format)!;
   const aspect = doc.width / doc.height;
@@ -59,6 +63,29 @@ export function ExportPanel() {
       setNote(e instanceof Error ? e.message : 'Export failed.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveProject = async () => {
+    setProjectNote('Packing layers…');
+    try {
+      const blob = await exportProject(readState().doc, readBitmaps());
+      download(blob, `kanvara-${Date.now()}.kanvara.json`);
+      setProjectNote(`Project written, ${humanBytes(blob.size)}.`);
+    } catch {
+      setProjectNote('Could not write the project file.');
+    }
+  };
+
+  const openProject = async (file: File) => {
+    setProjectNote('Reading…');
+    try {
+      const { doc: next, bitmaps } = await importProject(file);
+      loadDocument(next, bitmaps);
+      invalidate();
+      setProjectNote('Project opened.');
+    } catch (e) {
+      setProjectNote(e instanceof Error ? e.message : 'That file could not be read.');
     }
   };
 
@@ -180,6 +207,31 @@ export function ExportPanel() {
               </button>
             ))}
           </div>
+        </Section>
+
+        <Section title="Project file" defaultOpen={false}>
+          <p className="mb-2.5 text-[11px] leading-relaxed text-text-low">
+            Keeps every layer editable so you can come back to the file later, on this machine
+            or another one. It never touches a server.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={saveProject} disabled={!doc.layers.length}>
+              Save project
+            </Button>
+            <Button onClick={() => projectRef.current?.click()}>Open project</Button>
+          </div>
+          {projectNote && <p className="mt-2 text-[11px] text-text-mid">{projectNote}</p>}
+          <input
+            ref={projectRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) openProject(f);
+              e.target.value = '';
+            }}
+          />
         </Section>
 
         <div className="sticky bottom-0 border-t border-line bg-surface-1/95 p-4 backdrop-blur">
