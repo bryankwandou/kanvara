@@ -52,6 +52,8 @@ Requires a browser with WebGL2, which covers Chrome, Edge, Firefox and Safari 15
 | `src/engine/animate.ts` | Timeline evaluation and WebM encoding |
 | `src/engine/cutout.ts` | Background removal, local model and colour keyer |
 | `src/engine/store.ts` | Document model, layers, undo history |
+| `src/engine/persist.ts` | IndexedDB session guard and the project file format |
+| `public/sw.js` | Cache-first service worker behind offline use |
 | `src/components/editor/` | Tool rail, canvas stage, and the eleven panels |
 | `brand.md` | Colour, type and voice decisions, with the reasoning |
 
@@ -73,6 +75,18 @@ Stepping down in halves removes the shimmer on hair and text.
 **Gestures are one undo step.** Continuous edits write without committing history; the pre-drag
 state is pushed once when the gesture starts.
 
+**The session survives a closed tab.** Layers are written to IndexedDB as PNG blobs once editing
+goes idle for a couple of seconds. `localStorage` was never an option — one twelve-megapixel layer
+base64-encoded already exceeds the five-megabyte budget.
+
+**The histogram is read from a 220px composite.** Pulling pixels back off the GPU is the expensive
+half of the operation, and at that size the shape is indistinguishable from a full-resolution read
+while costing under a millisecond.
+
+**Offline is real, not a claim.** A cache-first service worker pins the shell and its chunks on
+first visit. After that the editor opens with the network switched off, which is the only honest
+way to promise offline work when nothing is uploaded anyway.
+
 ## Keyboard
 
 | Key | Action |
@@ -86,6 +100,9 @@ state is pushed once when the gesture starts.
 | `Ctrl`/`⌘` scroll | Zoom |
 | `Alt` drag | Pan |
 | `Shift` while dragging a slider | Fine adjustment |
+| `\` held | Show the untouched original |
+| `0` | Fit the photo to the window |
+| `?` | Open the shortcut sheet |
 
 ## Optional configuration
 

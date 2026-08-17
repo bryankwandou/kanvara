@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { ServiceWorker } from '@/components/ServiceWorker';
 import './globals.css';
 
 const inter = Inter({
@@ -30,7 +31,10 @@ export const metadata: Metadata = {
     siteName: 'Kanvara',
     type: 'website',
   },
-  icons: { icon: '/mark.svg' },
+  icons: { icon: '/mark.svg', apple: '/mark.svg' },
+  manifest: '/manifest.webmanifest',
+  applicationName: 'Kanvara',
+  appleWebApp: { capable: true, title: 'Kanvara', statusBarStyle: 'black-translucent' },
 };
 
 export const viewport: Viewport = {
@@ -41,7 +45,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }

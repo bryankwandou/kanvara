@@ -1,0 +1,20 @@
+{
+  "name": "Kanvara",
+  "short_name": "Kanvara",
+  "description": "A complete photo editor that runs in your browser. No watermark, no account, nothing uploaded.",
+  "start_url": "/edit",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0b0d",
+  "theme_color": "#0b0b0d",
+  "categories": ["photo", "graphics", "productivity"],
+  "icons": [
+    {
+      "src": "/mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
